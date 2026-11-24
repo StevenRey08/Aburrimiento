@@ -5,28 +5,31 @@
 
   const BIOME = [
     {
-      skyTop: '#9BD8F5', skyBot: '#FFF0D6', sun: '#FFF1A6', sunRim: '#FFD35C',
-      far: '#BFE6B4', farEdge: '#A6D99C', near: '#93D186', nearEdge: '#74BC6C',
-      tree: '#5DAA62', treeDark: '#3E7F47', trunk: '#7A4E2D',
-      grass: '#8DCF7A', grassDark: '#6CB260', soil: '#D0A074', soilDark: '#A87A52', flower: '#FFB3C9',
-      sea: '#FFFFFF', seaShade: '#D9E9FA', seaLine: '#AFD2F3',
-      cloud: { body: '#FFFFFF', shade: '#D7E8FA', line: '#9CC3EA' }, night: false,
+      skyTop: '#8BD1F5', skyBot: '#FFF3DA', sun: '#FFF5B8', sunRim: '#FFD154',
+      far: '#BDE5B5', farEdge: '#A2D69A', near: '#8FD082', nearEdge: '#6FB866',
+      treeHi: '#7CD176', tree: '#56A95C', treeDark: '#3A7B44', trunk: '#7A4E2D',
+      grassHi: '#A8E38E', grass: '#86CC74', grassDark: '#63AB58', soil: '#D2A276', soilDark: '#AD7E54',
+      flower: '#FF9EC2', flower2: '#FFE278',
+      seaHi: '#FFFFFF', sea: '#F4F9FF', seaShade: '#D3E6FA', seaLine: '#A6CCF1',
+      cloud: { body: '#FFFFFF', shade: '#D7E8FA', line: '#95BEE8' }, night: false,
     },
     {
-      skyTop: '#F5A18E', skyBot: '#FFE0B5', sun: '#FFD27A', sunRim: '#F7A74A',
-      far: '#E7B49E', farEdge: '#D89C85', near: '#D9977E', nearEdge: '#BD7B66',
-      tree: '#C98A5A', treeDark: '#9C6240', trunk: '#6B4330',
-      grass: '#D9A06C', grassDark: '#B97E53', soil: '#B57A59', soilDark: '#8E5C42', flower: '#FFE08A',
-      sea: '#FFF6EC', seaShade: '#F6D2BF', seaLine: '#E9A98F',
-      cloud: { body: '#FFF4EC', shade: '#F6CDBE', line: '#D9978A' }, night: false,
+      skyTop: '#F09188', skyBot: '#FFE2B8', sun: '#FFE194', sunRim: '#F79D45',
+      far: '#E6B29C', farEdge: '#D69881', near: '#D6937B', nearEdge: '#B87561',
+      treeHi: '#DF9F6B', tree: '#C68454', treeDark: '#965C3C', trunk: '#6B4330',
+      grassHi: '#E8B67F', grass: '#D59B67', grassDark: '#B3784D', soil: '#B57A59', soilDark: '#8E5C42',
+      flower: '#FFE28A', flower2: '#FFB3C9',
+      seaHi: '#FFF9F2', sea: '#FFF2E6', seaShade: '#F4CCB8', seaLine: '#E4A086',
+      cloud: { body: '#FFF5EE', shade: '#F6CCBC', line: '#D49084' }, night: false,
     },
     {
-      skyTop: '#1B2A52', skyBot: '#56699F', sun: '#F3EED0', sunRim: '#C9D2F5',
-      far: '#34497F', farEdge: '#2C3E70', near: '#2A3C6E', nearEdge: '#22345F',
-      tree: '#3B5C8E', treeDark: '#2C4673', trunk: '#1F2D57',
-      grass: '#3F5A9A', grassDark: '#33497F', soil: '#2B3C6B', soilDark: '#1F2D57', flower: '#CDB8FF',
-      sea: '#8D9BD0', seaShade: '#6F7FB9', seaLine: '#5B68A3',
-      cloud: { body: '#8EA0DA', shade: '#6F80C0', line: '#4D5C9A' }, night: true,
+      skyTop: '#17264D', skyBot: '#5367A1', sun: '#F7F2D4', sunRim: '#C5D0F6',
+      far: '#32477D', farEdge: '#293B6B', near: '#27396B', nearEdge: '#1E305B',
+      treeHi: '#4D73AA', tree: '#38588A', treeDark: '#27406B', trunk: '#1E2B54',
+      grassHi: '#5373B8', grass: '#3F5B9B', grassDark: '#30467C', soil: '#2B3C6B', soilDark: '#1F2D57',
+      flower: '#D7C4FF', flower2: '#FFE694',
+      seaHi: '#AEBBE8', sea: '#8D9BD0', seaShade: '#6D7DB8', seaLine: '#55639E',
+      cloud: { body: '#92A4DE', shade: '#7081C2', line: '#4B5A98' }, night: true,
     },
   ];
 
@@ -46,29 +49,46 @@
 
   function buildSky(bi, AW, AH) {
     const P = BIOME[bi], c = NV.mk(AW, AH), g = c.getContext('2d');
-    const top = rgb(P.skyTop), bot = rgb(P.skyBot), BANDS = 6;
+    const top = rgb(P.skyTop), bot = rgb(P.skyBot), BANDS = 11;
     for (let y = 0; y < AH; y++) {
-      const q = Math.min(BANDS - 1, Math.floor((y / AH) * BANDS)) / (BANDS - 1);
-      g.fillStyle = mix(top, bot, q);
-      g.fillRect(0, y, AW, 1);
+      const f = (y / AH) * (BANDS - 1);
+      const b0 = Math.min(BANDS - 1, Math.floor(f));
+      const b1 = Math.min(BANDS - 1, b0 + 1);
+      const frac = f - b0;
+      const c0 = mix(top, bot, b0 / (BANDS - 1));
+      const c1 = mix(top, bot, b1 / (BANDS - 1));
+      if (frac > 0.72 && b1 > b0) {
+        g.fillStyle = c0; g.fillRect(0, y, AW, 1);
+        g.fillStyle = c1;
+        for (let x = y % 2; x < AW; x += 2) g.fillRect(x, y, 1, 1);
+      } else {
+        g.fillStyle = c0; g.fillRect(0, y, AW, 1);
+      }
     }
     const sx = Math.round(AW * 0.8), sy = Math.round(AH * 0.2), R = Math.max(5, Math.round(AH * 0.065));
     if (P.night) {
-      for (let i = 0; i < 70; i++) {
-        const big = i % 7 === 0;
-        g.fillStyle = i % 5 === 0 ? '#FFFFFF' : 'rgba(255,255,255,0.6)';
-        g.fillRect((i * 97) % AW, (i * 53) % Math.round(AH * 0.75), big ? 2 : 1, big ? 2 : 1);
+      for (let i = 0; i < 75; i++) {
+        const x = (i * 97 + 13) % AW, y = (i * 53 + 7) % Math.round(AH * 0.75);
+        if (i % 13 === 0) {
+          g.fillStyle = '#FFF7C2';
+          g.fillRect(x - 1, y, 3, 1); g.fillRect(x, y - 1, 1, 3);
+        } else {
+          g.fillStyle = i % 4 === 0 ? '#FFFFFF' : 'rgba(255,255,255,0.55)';
+          g.fillRect(x, y, 1, 1);
+        }
       }
+      pdisc(g, sx, sy, R + 3, 'rgba(247,242,212,0.16)');
       pdisc(g, sx, sy, R, P.sun);
-      pdisc(g, sx + R * 0.5, sy - R * 0.25, R * 0.85, mix(top, bot, sy / AH));
+      pdisc(g, sx + R * 0.48, sy - R * 0.24, R * 0.85, mix(top, bot, sy / AH));
     } else {
-      pdisc(g, sx, sy, R + 5, 'rgba(255,255,255,0.28)');
-      pdisc(g, sx, sy, R + 2, P.sunRim);
+      pdisc(g, sx, sy, R + 6, 'rgba(255,255,255,0.22)');
+      pdisc(g, sx, sy, R + 3, 'rgba(255,255,255,0.34)');
+      pdisc(g, sx, sy, R + 1.6, P.sunRim);
       pdisc(g, sx, sy, R, P.sun);
       g.fillStyle = P.sunRim;
       for (let i = 0; i < 12; i++) {
-        const a = (i * Math.PI) / 6;
-        for (let r = R + 4; r <= R + 6; r++) g.fillRect(Math.round(sx + Math.cos(a) * r), Math.round(sy + Math.sin(a) * r), 1, 1);
+        const a = (i * Math.PI) / 6, len = i % 2 === 0 ? R + 6 : R + 4;
+        for (let r = R + 3; r <= len; r++) g.fillRect(Math.round(sx + Math.cos(a) * r), Math.round(sy + Math.sin(a) * r), 1, 1);
       }
     }
     return c;
@@ -76,14 +96,17 @@
 
   function treeAt(g, x, y, r, P) {
     const cx = x, cy = y - r - 2;
+    g.fillStyle = P.trunk;
+    g.fillRect(cx - 1, cy + r - 1, 2, y - (cy + r - 1));
     for (let yy = cy - r; yy <= cy + r; yy++) {
       for (let xx = cx - r; xx <= cx + r; xx++) {
         const dx = xx + 0.5 - cx, dy = yy + 0.5 - cy;
-        if (dx * dx + dy * dy <= r * r) { g.fillStyle = dy > r * 0.25 ? P.treeDark : P.tree; g.fillRect(xx, yy, 1, 1); }
+        if (dx * dx + dy * dy <= r * r) {
+          g.fillStyle = dy > r * 0.25 ? P.treeDark : (dx < -r * 0.15 && dy < -r * 0.15 ? P.treeHi : P.tree);
+          g.fillRect(xx, yy, 1, 1);
+        }
       }
     }
-    g.fillStyle = P.trunk;
-    g.fillRect(cx - 1, cy + r - 1, 2, y - (cy + r - 1));
   }
 
   /* Cerros periódicos (para que se repitan sin cortes). */
@@ -110,16 +133,23 @@
     const c = NV.mk(TW, GH), g = c.getContext('2d');
     g.fillStyle = P.soil; g.fillRect(0, 0, TW, GH);
     for (let x = 0; x < TW; x++) {
-      g.fillStyle = P.grass; g.fillRect(x, 0, 1, 2);
-      g.fillStyle = P.grassDark; g.fillRect(x, 2, 1, 1);
-      for (let y = 3; y < GH; y++) {
+      const tuft = (x * 7 + (x % 3)) % 5 === 0 ? 1 : 0;
+      g.fillStyle = P.grassHi; g.fillRect(x, 0, 1, 1);
+      g.fillStyle = P.grass; g.fillRect(x, 1, 1, 1 + tuft);
+      g.fillStyle = P.grassDark; g.fillRect(x, 2 + tuft, 1, 1);
+      for (let y = 4; y < GH; y++) {
         const h = Math.abs(Math.sin(x * 127.1 + y * 311.7) * 43758.5453) % 1;
-        if (h < 0.1) { g.fillStyle = P.soilDark; g.fillRect(x, y, 1, 1); }
+        if (h < 0.08) { g.fillStyle = P.soilDark; g.fillRect(x, y, 1, 1); }
+        else if (h > 0.975 && y > 6) { g.fillStyle = P.soilDark; g.fillRect(x, y, 2, 1); }
       }
     }
-    for (let i = 0; i < 9; i++) {
-      const fx = 6 + i * 35 + (i % 3) * 3;
-      g.fillStyle = P.flower; g.fillRect(fx, 0, 1, 1); g.fillRect(fx + 1, 1, 1, 1);
+    for (let i = 0; i < 11; i++) {
+      const fx = 6 + i * 29 + (i % 3) * 2;
+      g.fillStyle = i % 2 === 0 ? P.flower : P.flower2;
+      g.fillRect(fx, 0, 1, 1);
+      g.fillRect(fx + 1, 0, 1, 1);
+      g.fillStyle = '#FFFFFF';
+      g.fillRect(fx, 1, 1, 1);
     }
     return c;
   }
@@ -129,12 +159,13 @@
     for (let x = 0; x < TW; x++) {
       const top = Math.round(7 + 1.6 * Math.sin((2 * Math.PI * x) / TW * 4));
       g.fillStyle = P.sea; g.fillRect(x, top, 1, SH - top);
-      g.fillStyle = P.seaShade; g.fillRect(x, SH - 4, 1, 4);
+      g.fillStyle = P.seaShade; g.fillRect(x, SH - 5, 1, 5);
       g.fillStyle = P.seaLine; g.fillRect(x, top, 1, 1);
     }
     for (let bx = 0; bx < TW; bx += 32) {
-      pdisc(g, bx + 16, 10, 7.5, P.seaLine);
-      pdisc(g, bx + 16, 10, 6.5, P.sea);
+      pdisc(g, bx + 16, 10, 8, P.seaLine);
+      pdisc(g, bx + 16, 10, 7, P.sea);
+      pdisc(g, bx + 14, 8, 4.2, P.seaHi);
     }
     return c;
   }

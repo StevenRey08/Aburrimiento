@@ -32,12 +32,18 @@
     const c = NV.mk(AW, AH), b = c.getContext('2d');
     for (let y = 0; y < AH; y++) {
       for (let x = 0; x < AW; x++) {
-        b.fillStyle = ((x >> 2) + (y >> 2)) % 2 ? '#F4B3C8' : '#FFF6F9';
+        const cx = (x >> 2) % 2, cy = (y >> 2) % 2;
+        b.fillStyle = cx && cy ? '#EE93B2' : cx || cy ? '#FAD0DF' : '#FFF8FA';
         b.fillRect(x, y, 1, 1);
       }
     }
-    b.fillStyle = '#E58FAB';
+    b.fillStyle = '#DD7699';
     b.fillRect(0, 0, AW, 1);
+    b.fillStyle = '#FFFFFF';
+    for (let x = 0; x < AW; x += 4) {
+      b.fillRect(x, 1, 3, 1);
+      b.fillRect(x + 1, 2, 1, 1);
+    }
     return c;
   }
   function layout() {
@@ -195,12 +201,17 @@
     const y = plateY(), x = g.px;
     /* sombra en el plato: se hace más chica mientras el personaje está en el aire */
     const lift = NV.clamp(g.jh / 180, 0, 1);
-    ctx.fillStyle = 'rgba(90,60,30,' + (0.18 - lift * 0.08).toFixed(3) + ')';
+    ctx.fillStyle = 'rgba(90,60,30,' + (0.2 - lift * 0.08).toFixed(3) + ')';
     ctx.beginPath(); ctx.ellipse(x, y + 9, 56 - lift * 14, 10 - lift * 3, 0, 0, Math.PI * 2); ctx.fill();
-    ctx.fillStyle = '#E4DCD3';
-    ctx.beginPath(); ctx.ellipse(x, y + 4, 52, 11, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#DDD3C8';
+    ctx.beginPath(); ctx.ellipse(x, y + 4, 53, 11.5, 0, 0, Math.PI * 2); ctx.fill();
     ctx.fillStyle = '#FFFFFF';
-    ctx.beginPath(); ctx.ellipse(x, y, 50, 10, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(x, y, 51, 10.5, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.strokeStyle = '#F7A8C4';
+    ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.ellipse(x, y, 45, 8.2, 0, 0, Math.PI * 2); ctx.stroke();
+    ctx.fillStyle = '#F4ECE4';
+    ctx.beginPath(); ctx.ellipse(x, y + 0.5, 36, 6, 0, 0, Math.PI * 2); ctx.fill();
   }
   function draw() {
     if (!fit) return;

@@ -45,87 +45,144 @@
   const urls = new WeakMap();
 
   /* ---------- personajes ---------- */
-  /* Accesorios dibujados pixel a pixel. Cada uno devuelve un color o null.
-     El lacito va a la derecha de la cabeza; la coronita va encima, con su tercera punta y sus gemas. */
-  /* El lazo va atado al costado derecho de la cabeza, donde se une con la oreja: el nudo cae sobre el contorno. */
+  /* Lazo rosado con volumen atado a la oreja derecha de Marian. */
+  const BOW_ROWS = [
+    '..oo...oo..',
+    '.oHPo.oPHo.',
+    '.oPPoooPPo.',
+    '.oPDoKooPo.',
+    '.oPDoKooDo.',
+    '..oo...oo..',
+  ];
+  const BOW_PAL = { o: '#9D2D59', H: '#FFC2D9', P: '#FF7FB0', D: '#EA5690', K: '#C9346E' };
   function bow(x, y) {
-    const cx = x + 0.5, cy = y + 0.5;
-    if (Math.hypot(cx - 28, cy - 11) <= 1.1) return '#D9457F';
-    if (pointIn([[28, 11], [24.5, 8], [24.5, 14]], cx, cy)) return '#FF7FB0';
-    if (pointIn([[28, 11], [31.5, 8], [31.5, 14]], cx, cy)) return '#FF7FB0';
-    return null;
+    const r = y - 7, c = x - 24;
+    if (r < 0 || r >= BOW_ROWS.length || c < 0 || c >= BOW_ROWS[0].length) return null;
+    return BOW_PAL[BOW_ROWS[r][c]] || null;
   }
-  /* Coronita chiquita para Marian: se apoya en la parte de arriba de la cabeza, sin tapar sus lados. */
-  const CROWN_M_ROWS = ['...YY...', 'Y..YY..Y', 'YYYYYYYY', 'GGGPPGGG', 'GGGGGGGG', 'DDDDDDDD'];
-  const CROWN_M_PAL = { Y: '#FFD35C', G: '#FFD35C', D: '#E0A93A', P: '#EF5D8B' };
+  /* Coronita de Marian con brillo, sombra y gema rosada. */
+  const CROWN_M_ROWS = [
+    '....oo....',
+    '.oo.oYo.oo',
+    'oYo.oHo.oY',
+    'oYYoYYYoYY',
+    'oGGGPGGGGo',
+    '.oDDDDDDo.',
+  ];
+  const CROWN_M_PAL = { o: '#9E681B', H: '#FFF1A6', Y: '#FFD863', G: '#F6BE42', D: '#D89726', P: '#FF4F87' };
   function crownMarian(x, y) {
-    const r = y - 1, c = x - 16;
-    if (r < 0 || r >= CROWN_M_ROWS.length || c < 0 || c >= 8) return null;
+    const r = y - 1, c = x - 15;
+    if (r < 0 || r >= CROWN_M_ROWS.length || c < 0 || c >= CROWN_M_ROWS[0].length) return null;
     return CROWN_M_PAL[CROWN_M_ROWS[r][c]] || null;
   }
-  function crownAt(b) {
-    const X = 20, TIPS = [
-      [[X - 6.5, b + 0.3], [X - 6, b - 3], [X - 3.2, b + 0.3]],
-      [[X - 2.6, b + 0.3], [X, b - 4.5], [X + 2.6, b + 0.3]],
-      [[X + 3.2, b + 0.3], [X + 6, b - 3], [X + 6.5, b + 0.3]],
-    ];
-    return (x, y) => {
-      const cx = x + 0.5, cy = y + 0.5;
-      if (cy >= b && cy < b + 3 && Math.abs(cx - X) <= 6.5) {
-        const gy = b + 1.5;
-        if (Math.hypot(cx - X, cy - gy) <= 1) return '#EF5D8B';
-        if (Math.hypot(cx - (X - 5), cy - gy) <= 0.9 || Math.hypot(cx - (X + 5), cy - gy) <= 0.9) return '#7FD3FF';
-        return cy >= b + 2 ? '#E0A93A' : '#FFD35C';
-      }
-      return TIPS.some(t => pointIn(t, cx, cy)) ? '#FFD35C' : null;
-    };
+  /* Corona real de Rey con puntas perfiladas y tres gemas. */
+  const CROWN_R_ROWS = [
+    '......ooo......',
+    '.oo...oHo...oo.',
+    'oYHo.oYYYo.oHYo',
+    'oYYYoYYYYYoYYYo',
+    'oYYBYYPPPYYBYYo',
+    'oGGGGGGGGGGGGGo',
+    '.oDDDDDDDDDDDo.',
+  ];
+  const CROWN_R_PAL = { o: '#9E681B', H: '#FFF2AD', Y: '#FFD863', G: '#F6BE42', D: '#D89726', P: '#FF4F87', B: '#73D2FF' };
+  function crownRey(x, y) {
+    const r = y - 2, c = x - 12;
+    if (r < 0 || r >= CROWN_R_ROWS.length || c < 0 || c >= CROWN_R_ROWS[0].length) return null;
+    return CROWN_R_PAL[CROWN_R_ROWS[r][c]] || null;
   }
-  const CROWN_REY = crownAt(7);
 
-  /* Marian: lacito y coronita. Rey: solo coronita. Los dos tienen pies redondos. */
+  /* Marian: orejas suaves, manitos y lazo; Rey: redondito dorado con corona real. */
   const CHAR = {
     marian: {
-      body: '#FFFFFF', shade: '#D3E7FB', line: '#7FA9D6', cheek: '#FF9FBA', eye: '#243656',
-      shapes: [[20, 23, 14, 11], [11, 17, 6.5, 6.5], [20, 12, 8, 8], [29, 17, 6.5, 6.5], [12, 34, 3, 2], [26, 34, 3, 2]],
+      body: '#FFFFFF', hi: '#FFFFFF', shade: '#D6E9FC', earShade: '#C7DFF8', line: '#6F98C9',
+      cheek: '#FF9AB8', eye: '#243656', tongue: '#FF7FA4',
+      shapes: [
+        [20, 15, 9.2, 7.8], [20, 26, 10.2, 8.6],
+        [9.5, 16.5, 4.3, 6.8], [30.5, 16.5, 4.3, 6.8],
+        [12.5, 25.5, 2.8, 2.3], [27.5, 25.5, 2.8, 2.3],
+        [14.5, 34.5, 3.2, 2.2], [25.5, 34.5, 3.2, 2.2],
+      ],
+      headCy: 15, headRy: 7.8,
+      ey: 16, my: 19, cy: 19,
       deco: (x, y) => bow(x, y) || crownMarian(x, y),
+      detail(x, y) {
+        if ((x === 12 || x === 27) && y >= 13 && y <= 17) return '#9BBCE3';
+        if ((x < 12 || x > 27) && y >= 19) return '#C7DFF8';
+        return null;
+      },
     },
     rey: {
-      body: '#FFE7A0', shade: '#EFC15A', line: '#A87532', cheek: '#F4957F', eye: '#3A2716',
-      shapes: [[20, 22, 15, 14], [13.5, 35.5, 3.2, 3.2], [26.5, 35.5, 3.2, 3.2]],
-      deco: CROWN_REY,
+      body: '#FFE496', hi: '#FFF3C4', shade: '#ECC056', earShade: '#ECC056', line: '#9E6A28',
+      cheek: '#F6917B', eye: '#3A2716', tongue: '#FF849D',
+      shapes: [
+        [20, 21.5, 13.5, 12.8],
+        [8.2, 24.5, 2.6, 3.0], [31.8, 24.5, 2.6, 3.0],
+        [14, 34.5, 3.3, 2.4], [26, 34.5, 3.3, 2.4],
+      ],
+      headCy: 17, headRy: 9,
+      ey: 18, my: 21, cy: 21,
+      deco: crownRey,
+      detail(x, y) {
+        if (Math.hypot(x + 0.5 - 16, y + 0.5 - 13) <= 3.2) return '#FFF3C4';
+        if (y >= 26 && Math.hypot(x + 0.5 - 20, y + 0.5 - 27) <= 5.5) return '#FFF1BC';
+        return null;
+      },
     },
   };
-  const FACE = {
-    open: {
-      eye: [[13, 20], [14, 20], [13, 21], [14, 21], [25, 20], [26, 20], [25, 21], [26, 21]],
-      mouth: [[19, 26], [20, 26], [19, 27], [20, 27]],
-    },
-    happy: {
-      eye: [[12, 21], [13, 20], [14, 20], [15, 21], [24, 21], [25, 20], [26, 20], [27, 21]],
-      mouth: [[16, 25], [17, 26], [18, 26], [19, 27], [20, 27], [21, 26], [22, 26], [23, 25]],
-    },
-    ugh: {
-      eye: [[13, 20], [14, 20], [13, 21], [14, 21], [25, 20], [26, 20], [25, 21], [26, 21]],
-      brow: [[12, 17], [13, 18], [14, 18], [27, 17], [26, 18], [25, 18]],
-      mouth: [[17, 26], [18, 27], [19, 26], [20, 26], [21, 27], [22, 26]],
-    },
-    sleep: {
-      eye: [[12, 21], [13, 21], [14, 21], [25, 21], [26, 21], [27, 21]],
-      mouth: [[19, 27], [20, 27]],
-    },
-  };
-  const CHEEKS = SET([[9, 24], [10, 24], [29, 24], [30, 24]]);
+  function faceMaps(P) {
+    const ey = P.ey, my = P.my, cy = P.cy;
+    return {
+      cheeks: SET([
+        [11, cy], [12, cy], [11, cy + 1], [12, cy + 1],
+        [27, cy], [28, cy], [27, cy + 1], [28, cy + 1],
+      ]),
+      open: {
+        eye: [[14, ey], [15, ey], [14, ey + 1], [15, ey + 1], [24, ey], [25, ey], [24, ey + 1], [25, ey + 1]],
+        glint: [[14, ey], [24, ey]],
+        mouth: [[19, my], [20, my], [19, my + 1], [20, my + 1]],
+        tongue: [[19, my + 1], [20, my + 1]],
+      },
+      happy: {
+        eye: [[13, ey + 1], [14, ey], [15, ey], [16, ey + 1], [23, ey + 1], [24, ey], [25, ey], [26, ey + 1]],
+        glint: [],
+        mouth: [[17, my], [18, my + 1], [19, my], [20, my], [21, my + 1], [22, my]],
+        tongue: [],
+      },
+      ugh: {
+        eye: [[14, ey], [15, ey], [14, ey + 1], [15, ey + 1], [24, ey], [25, ey], [24, ey + 1], [25, ey + 1]],
+        glint: [[14, ey], [24, ey]],
+        brow: [[13, ey - 2], [14, ey - 1], [15, ey - 1], [26, ey - 2], [25, ey - 1], [24, ey - 1]],
+        mouth: [[17, my + 1], [18, my], [19, my + 1], [20, my + 1], [21, my], [22, my + 1]],
+        tongue: [],
+      },
+      sleep: {
+        eye: [[13, ey + 1], [14, ey + 1], [15, ey + 1], [24, ey + 1], [25, ey + 1], [26, ey + 1]],
+        glint: [],
+        mouth: [[19, my + 1], [20, my + 1]],
+        tongue: [],
+      },
+    };
+  }
   function character(kind, face) {
-    const P = CHAR[kind], F = FACE[face];
+    const P = CHAR[kind], maps = faceMaps(P), F = maps[face];
     const feat = SET([...F.eye, ...(F.brow || []), ...F.mouth]);
+    const glint = SET(F.glint);
+    const tongue = SET(F.tongue);
     return paint(40, 40, (x, y) => {
       const d = P.deco(x, y);
       if (d) return d;
       if (!P.shapes.some(e => inEll(x, y, e))) return null;
       const k = K(x, y);
+      if (glint.has(k)) return '#FFFFFF';
+      if (tongue.has(k)) return P.tongue;
       if (feat.has(k)) return P.eye;
-      if (CHEEKS.has(k)) return P.cheek;
-      return y >= 28 ? P.shade : P.body;
+      if (maps.cheeks.has(k)) return P.cheek;
+      const det = P.detail(x, y);
+      if (det) return det;
+      const dx = (x + 0.5 - 20) / 11;
+      const shadeY = 27.5 + (1 - dx * dx) * 2.5;
+      return y >= shadeY ? P.shade : P.body;
     }, P.line);
   }
 
@@ -161,45 +218,99 @@
     s: '#FFE37E',
   };
   const strawberry = () => gridArt(STRAWBERRY, STRAWBERRY_PAL);
-  function cookie() {
-    const CHIPS = SET([[5, 5], [10, 4], [11, 9], [6, 11], [9, 12], [4, 9]]);
-    return paint(16, 16, (x, y) => {
-      const dx = x + 0.5 - 8, dy = y + 0.5 - 8, d2 = dx * dx + dy * dy;
-      if (d2 > 49) return null;
-      if (CHIPS.has(K(x, y))) return '#5C3A1E';
-      return d2 > 30 ? '#C48A4B' : '#E0AD6E';
-    }, '#8A5A2B');
-  }
-  function donut() {
-    const SPRINK = { '4,6': '#FFE08A', '11,5': '#8AC0E6', '12,10': '#C9B6F5', '5,11': '#FFFFFF', '9,13': '#FFE08A', '3,10': '#FFFFFF' };
-    return paint(16, 16, (x, y) => {
-      const dx = x + 0.5 - 8, dy = y + 0.5 - 8, d = Math.sqrt(dx * dx + dy * dy);
-      if (d > 7 || d < 2.4) return null;
-      const s = SPRINK[K(x, y)];
-      if (s) return s;
-      return d > 5 ? '#E7B070' : '#F7A6C4';
-    }, '#9C6A34');
-  }
-  function apple() {
-    return paint(16, 16, (x, y) => {
-      const cx = x + 0.5, cy = y + 0.5;
-      if ((x === 8 && (y === 2 || y === 3))) return '#6B4A2A';
-      if ((x === 9 && y === 2) || (x === 10 && (y === 2 || y === 3)) || (x === 11 && y === 2)) return '#5DBB63';
-      const inside = ((cx - 8) / 6.2) ** 2 + ((cy - 9.6) / 5.6) ** 2 <= 1;
-      if (!inside) return null;
-      if ((x === 4 && (y === 8 || y === 9)) || (x === 5 && y === 7)) return '#FFB5AE';
-      return cy > 12.5 ? '#C23A36' : '#E24B45';
-    }, '#7A2A25');
-  }
-  function broccoli() {
-    const puffs = [[4.5, 6.5, 3.2], [8, 4.6, 3.6], [11.5, 6.5, 3.2], [6.5, 9.2, 3.2], [9.5, 9.2, 3.2]];
-    return paint(16, 16, (x, y) => {
-      const cx = x + 0.5, cy = y + 0.5;
-      if (x >= 6 && x <= 9 && y >= 11 && y <= 15) return x === 6 ? '#8FBF7A' : '#A8D08D';
-      if (!puffs.some(([px, py, r]) => (cx - px) ** 2 + (cy - py) ** 2 <= r * r)) return null;
-      return cy < 5.5 ? '#7FC474' : '#5C9E55';
-    }, '#345E30');
-  }
+  const COOKIE = [
+    '................',
+    '.....oooooo.....',
+    '...oobhhhhboo...',
+    '..obhhbbccbbbo..',
+    '.obhhbbCccbbddo.',
+    '.obbccbbbbbbbdo.',
+    '.obbbbbbbccbbdo.',
+    '.obhbbbbccbbbdo.',
+    '.obbCccbbbccddo.',
+    '.obbccbbbbbcddo.',
+    '.obbbbbbbbbdddo.',
+    '.odbbccbbbddddo.',
+    '..oddbccbbdddo..',
+    '...ooddddddoo...',
+    '.....oooooo.....',
+    '................',
+  ];
+  const COOKIE_PAL = { o: '#6B3D1B', h: '#F3CB8E', b: '#DFA763', d: '#BD8141', c: '#543219', C: '#7C4F2B' };
+  const cookie = () => gridArt(COOKIE, COOKIE_PAL);
+
+  const DONUT = [
+    '................',
+    '.....oooooo.....',
+    '...ooPPPPPPoo...',
+    '..oPPWWPPPYYPo..',
+    '.oPPWPPPPBBPPPo.',
+    '.oPPPPppppppPPo.',
+    '.oPpppoooopppPo.',
+    '.oPpppo..opppbo.',
+    '.oPpppo..opbbbo.',
+    '.oPbppoooopbbdo.',
+    '.obbbppppppdddo.',
+    '.obbbppVVppdddo.',
+    '..obbbpppddddo..',
+    '...oobbbdddoo...',
+    '.....oooooo.....',
+    '................',
+  ];
+  const DONUT_PAL = {
+    o: '#874D28', P: '#FF9EC2', p: '#EE7CA8', W: '#FFE3EE',
+    b: '#EBB778', d: '#CC8E4D', Y: '#FFE278', B: '#7CD0F8', V: '#CDB8FA',
+  };
+  const donut = () => gridArt(DONUT, DONUT_PAL);
+
+  const APPLE = [
+    '.......tt.ggg...',
+    '......tTtgHLg...',
+    '..ooooogTgggoo..',
+    '.opppprTTrrrrdo.',
+    '.opwppprrrrrddo.',
+    '.opwrrrrrrrrddo.',
+    '.oprrrrrrrrrddo.',
+    '.orrrrrrrrrdddo.',
+    '..orrrrrrrdddo..',
+    '..orrrrrrrdddo..',
+    '...orrrrrdddo...',
+    '...orrrrrdddo...',
+    '...oorrrdddoo...',
+    '....orrooddo....',
+    '.....oo..oo.....',
+    '................',
+  ];
+  const APPLE_PAL = {
+    o: '#751F1D', p: '#FF7D78', w: '#FFD0CD', r: '#E7423D', d: '#BF2725',
+    t: '#4A311A', T: '#7A522E', g: '#24522D', H: '#93EA7A', L: '#5BC75E',
+  };
+  const apple = () => gridArt(APPLE, APPLE_PAL);
+
+  const BROCCOLI = [
+    '.....gggggg.....',
+    '...ggHHLLLLgg...',
+    '..gHHLLLLLLGGg..',
+    '.gHHLLGGGGLLLGg.',
+    '.gHLLGHHLLGLLGg.',
+    '.gLLGHLLLLGLLGg.',
+    '.gGGGGLLLLGGGGg.',
+    '..ggGGLLLLGGgg..',
+    '...gGGSSSSGGg...',
+    '....kkSSSSkk....',
+    '.....kSSsdk.....',
+    '.....kSSsdk.....',
+    '.....kSSsdk.....',
+    '......kSdk......',
+    '......kkkk......',
+    '................',
+  ];
+  const BROCCOLI_PAL = {
+    g: '#24522D', G: '#3D843B', L: '#63B857', H: '#94DF7D',
+    k: '#426635', S: '#A9D68E', s: '#C6E7AF', d: '#81B169',
+  };
+  const broccoli = () => gridArt(BROCCOLI, BROCCOLI_PAL);
+
   const FOODS = { strawberry, cookie, donut, apple, broccoli };
 
   /* ---------- objetos ---------- */
@@ -211,33 +322,36 @@
     }
     return c;
   }
-  function starArt() {
-    const pts = [];
-    for (let i = 0; i < 10; i++) {
-      const R = i % 2 === 0 ? 5.4 : 2.6, a = -Math.PI / 2 + (i * Math.PI) / 5;
-      pts.push([5.5 + Math.cos(a) * R, 5.6 + Math.sin(a) * R]);
-    }
-    return paint(11, 11, (x, y) => {
-      const cx = x + 0.5, cy = y + 0.5;
-      if (!pointIn(pts, cx, cy)) return null;
-      return Math.hypot(cx - 5.5, cy - 5.6) < 1.7 ? '#FFF6CF' : '#FFD65E';
-    }, '#D99A2B');
-  }
+  const STAR = [
+    '.....Y.....',
+    '....YHY....',
+    '....YHY....',
+    'YYYYHHYYYYY',
+    '.YYHHHHHYY.',
+    '..YYHHHYY..',
+    '..YYYYDYY..',
+    '.YYY...YYY.',
+    '.YY.....YY.',
+    'Y.........Y',
+    '...........',
+  ];
+  const starArt = () => gridArt(STAR, { Y: '#FFD24C', H: '#FFF7C2', D: '#F2AC29' }, '#B57A18');
   function bubbleArt() {
     const RB = ['#FF9AB8', '#FFE08A', '#C5EDD1', '#8AC0E6', '#C9B6F5'];
     return paint(14, 14, (x, y) => {
       const dx = x + 0.5 - 7, dy = y + 0.5 - 7, d = Math.hypot(dx, dy);
       if (d > 6.6) return null;
-      if (d >= 5) {
+      if (d >= 5.1) {
         const a = (Math.atan2(dy, dx) + Math.PI) / (Math.PI * 2);
         return RB[Math.floor(a * RB.length) % RB.length];
       }
       if ((x === 3 && (y === 3 || y === 4)) || (x === 4 && y === 3)) return '#FFFFFF';
-      return 'rgba(255,255,255,0.55)';
-    }, '#B9A5E3');
+      if (x === 9 && y === 9) return 'rgba(255,255,255,0.75)';
+      return 'rgba(255,255,255,0.45)';
+    }, '#9E88D4');
   }
   function stormArt() {
-    const S = [[16, 25, 11], [31, 19, 15], [47, 24, 12], [24, 29, 9], [40, 29, 9]];
+    const S = [[16, 25, 11], [31, 18, 15], [47, 24, 12], [24, 29, 9], [40, 29, 9], [10, 29, 6], [53, 29, 6]];
     const DARK = SET([
       [24, 21], [25, 21], [24, 22], [25, 22], [38, 21], [39, 21], [38, 22], [39, 22],
       [22, 17], [23, 18], [24, 18], [25, 19], [41, 17], [40, 18], [39, 18], [38, 19],
@@ -248,15 +362,16 @@
       const cx = x + 0.5, cy = y + 0.5;
       if (!S.some(c => inCirc(x, y, c[0], c[1], c[2]))) return null;
       const k = K(x, y);
-      if (DARK.has(k)) return '#2B3550';
-      if (BLUSH.has(k)) return '#FF9AB8';
-      return cy >= 30 ? '#AEBBD3' : '#DCE4F1';
-    }, '#6E7B98');
+      if (DARK.has(k)) return '#26304A';
+      if (BLUSH.has(k)) return '#FF92B2';
+      if (cy <= 12 && cx >= 22 && cx <= 38) return '#EDF2FA';
+      return cy >= 29 ? '#9CA9C6' : '#CED8EC';
+    }, '#5A6785');
   }
-  const BOLT = ['....YY.', '...YY..', '..YY...', '.YYYYY.', '....YY.', '...YY..', '..Y....'];
-  const boltArt = () => gridArt(BOLT, { Y: '#FFE66B' }, '#C9A227');
-  const HEART = ['.RR.RR.', 'RHRRRRR', 'RRRRRRR', '.RRRRR.', '..RRR..', '...R...'];
-  const heartArt = () => gridArt(HEART, { R: '#EF6F8E', H: '#FFC2D1' }, '#A34A62');
+  const BOLT = ['....YY.', '...YWY.', '..YWW..', '.YYYYY.', '....YY.', '...YY..', '..Y....'];
+  const boltArt = () => gridArt(BOLT, { Y: '#FFE054', W: '#FFF8BE' }, '#B58816');
+  const HEART = ['.RR.RR.', 'RHRRRRR', 'RRRRRRR', '.RRRRD.', '..RRD..', '...D...'];
+  const heartArt = () => gridArt(HEART, { R: '#F26B8D', H: '#FFC7D6', D: '#D1476B' }, '#962E4C');
 
   function cloudArt(seed, pal) {
     const C = [
@@ -268,7 +383,8 @@
       const cx = x + 0.5, cy = y + 0.5;
       const inside = C.some(c => inCirc(x, y, c[0], c[1], c[2])) || (cy >= 19 && cy <= 27 && cx >= 10 && cx <= 54);
       if (!inside) return null;
-      return cy >= 23 ? pal.shade : pal.body;
+      const wave = 22.5 + Math.sin(cx * 0.28) * 1.2;
+      return cy >= wave ? pal.shade : pal.body;
     }, pal.line);
   }
   function rockArt() {
@@ -282,73 +398,105 @@
   function birdArt(f) {
     return paint(14, 10, (x, y) => {
       const cx = x + 0.5, cy = y + 0.5;
-      if (((cx - 6.5) / 4.8) ** 2 + ((cy - 5) / 2.6) ** 2 <= 1) return (x === 9 && y === 4) ? '#2F5BAE' : '#FFFFFF';
-      if (x >= 12 && x <= 13 && (y === 4 || y === 5)) return '#F7B26B';
-      if (f === 0 && y <= 2 && Math.abs(x - 6) <= 3 - y) return '#FFFFFF';
-      if (f === 1 && y >= 7 && Math.abs(x - 6) <= y - 6) return '#FFFFFF';
+      if (x >= 12 && x <= 13 && (y === 4 || y === 5)) return '#F7A94B';
+      if (x <= 2 && y === 4) return '#DCEBFA';
+      if (((cx - 6.8) / 4.6) ** 2 + ((cy - 5) / 2.6) ** 2 <= 1) {
+        if (x === 9 && y === 4) return '#243F7A';
+        if (x === 8 && y === 5) return '#FFA8C2';
+        return cy > 5.8 ? '#DCEBFA' : '#FFFFFF';
+      }
+      if (f === 0 && y <= 2 && Math.abs(x - 6) <= 3 - y) return y === 2 ? '#DCEBFA' : '#FFFFFF';
+      if (f === 1 && y >= 7 && Math.abs(x - 6) <= y - 6) return '#DCEBFA';
       return null;
-    }, '#8DB0D8');
+    }, '#6D92C2');
   }
   function wheelArt(f) {
     const th = (f * Math.PI) / 8;
     return paint(16, 16, (x, y) => {
       const dx = x + 0.5 - 8, dy = y + 0.5 - 8, r = Math.hypot(dx, dy);
       if (r > 6.9) return null;
-      if (r <= 1.3) return '#F3D9A4';
+      if (r <= 1.5) return '#FFE19C';
+      if (r >= 5.7) return '#4B2F1A';
       const a = Math.atan2(dy, dx);
       const spoke = r <= 5.6 && (Math.abs(Math.sin(a - th)) * r < 0.65 || Math.abs(Math.sin(a - th - Math.PI / 2)) * r < 0.65);
-      return spoke ? '#F3D9A4' : '#5A3B22';
-    }, '#2E1C10');
+      return spoke ? '#ECC98B' : '#70492A';
+    }, '#2A180D');
   }
-  /* Tronco: corteza, flores rosas arriba y anillos en la punta de adelante.
-     Sirve para el vehículo del paseo y para el tronco caído del camino. */
+  /* Tronco: corteza texturizada, brotes y flores arriba, y anillos en la punta de adelante. */
   function logArt(W, H) {
     const ry = H / 2 - 1.5, rx = ry * 0.78, ecx = W - rx - 1, ecy = H / 2;
     const FLOW = SET([[Math.round(W * 0.2), 2], [Math.round(W * 0.5), 3], [Math.round(W * 0.8), 2]]);
+    const LEAF = SET([[Math.round(W * 0.2) - 1, 2], [Math.round(W * 0.5) + 1, 3], [Math.round(W * 0.8) - 1, 2]]);
     const KNOT = SET([[Math.round(W * 0.35), Math.round(H * 0.62)], [Math.round(W * 0.66), Math.round(H * 0.72)]]);
     return paint(W, H, (x, y) => {
       const cx = x + 0.5, cy = y + 0.5;
       const ex = (cx - ecx) / rx, ey = (cy - ecy) / ry, d = Math.sqrt(ex * ex + ey * ey);
-      if (d <= 1) return d < 0.3 ? '#B9782F' : Math.floor(d * 5) % 2 ? '#E9C58C' : '#D9A866';
+      if (d <= 1) return d < 0.28 ? '#B67329' : Math.floor(d * 5) % 2 ? '#F0CE96' : '#DDA964';
       if (cx > ecx || cy < 1 || cy > H - 1) return null;
       const k = K(x, y);
-      if (FLOW.has(k)) return '#FF9DBB';
-      if (KNOT.has(k)) return '#4E3218';
-      if (cy < 4) return '#B07A45';
-      if (cy > H - 4) return '#6B4426';
-      return x % 9 === 0 ? '#5E3A1F' : '#8B5A32';
+      if (FLOW.has(k)) return '#FF95B8';
+      if (LEAF.has(k)) return '#66C761';
+      if (KNOT.has(k)) return '#4A2F17';
+      if (cy < 3.5) return '#BA824B';
+      if (cy > H - 3.5) return '#674023';
+      return (x + (y % 2) * 4) % 9 === 0 ? '#5C381E' : '#8F5D34';
     }, '#3A2415');
   }
-  /* Tocón para saltar: tapa con anillos y corteza abajo. */
+  /* Tocón para saltar: tapa con anillos, raíces abajo y brote verde al costado. */
   function stumpArt() {
     return paint(28, 20, (x, y) => {
       const cx = x + 0.5, cy = y + 0.5;
+      if ((x === 3 || x === 4) && y === 12) return '#5BC75E';
+      if (x === 3 && y === 11) return '#93EA7A';
       const te = ((cx - 14) / 12.5) ** 2 + ((cy - 6) / 4.5) ** 2;
-      if (te <= 1) return te < 0.09 ? '#B9782F' : Math.floor(Math.sqrt(te) * 4) % 2 ? '#E9C58C' : '#D9A866';
-      if (cx < 2 || cx > 26 || cy < 6 || cy > 19.5) return null;
-      return cy > 16 ? '#6B4426' : x % 7 === 3 ? '#5E3A1F' : '#8B5A32';
+      if (te <= 1) return te < 0.09 ? '#B67329' : Math.floor(Math.sqrt(te) * 4) % 2 ? '#F0CE96' : '#DDA964';
+      const flare = y >= 15 ? (y - 15) * 0.55 : 0;
+      if (cx < 2.5 - flare || cx > 25.5 + flare || cy < 6 || cy > 19.5) return null;
+      return cy > 16 ? '#674023' : (x + (y % 2) * 2) % 7 === 3 ? '#5C381E' : '#8F5D34';
     }, '#3A2415');
   }
   function logIcon() {
     return paint(16, 16, (x, y) => {
       const cx = x + 0.5, cy = y + 0.5;
-      const ex = (cx - 12) / 3.6, ey = (cy - 8) / 4.8, d = Math.sqrt(ex * ex + ey * ey);
-      if (d <= 1) return d < 0.35 ? '#B9782F' : Math.floor(d * 4) % 2 ? '#E9C58C' : '#D9A866';
-      if (cx > 12 || cy < 4.5 || cy > 11.5) return null;
-      if (cy < 6) return '#B07A45';
-      return x % 4 === 1 ? '#5E3A1F' : '#8B5A32';
+      if (x === 4 && y === 3) return '#FF95B8';
+      if ((x === 5 && y === 3) || (x === 5 && y === 4)) return '#5BC75E';
+      const ex = (cx - 11.5) / 3.4, ey = (cy - 8.5) / 4.6, d = Math.sqrt(ex * ex + ey * ey);
+      if (d <= 1) return d < 0.32 ? '#B67329' : Math.floor(d * 4) % 2 ? '#F0CE96' : '#DDA964';
+      if (cx > 11.5 || cy < 4.5 || cy > 12.5) return null;
+      if (cy < 6.2) return '#BA824B';
+      if (cy > 10.8) return '#674023';
+      return (x + y) % 5 === 1 ? '#5C381E' : '#8F5D34';
     }, '#3A2415');
   }
+  const VUELO_ICON = [
+    '................',
+    '.....oooooo.....',
+    '....oYYPPYYo....',
+    '...ooDDDDDDoo...',
+    '..oWWWWWWWWbBo..',
+    '.oSWWWWWWWbKBbo.',
+    'oSSWWEWWWWEWbBbo',
+    'oSSWWEWWWWEWWSSo',
+    'oSSWPWWMMWWPWSSo',
+    'oSSWWWWWWWWWWSSo',
+    '.ooWWWWWWWWWWoo.',
+    '..oWWWWWWWWWWo..',
+    '..oWWSSSSSSWWo..',
+    '...oooooooooo...',
+    '................',
+    '................',
+  ];
+  const VUELO_PAL = {
+    o: '#5E88BD', W: '#FFFFFF', S: '#D2E6FC', E: '#243656',
+    P: '#FF9AB8', M: '#D97296', Y: '#FFE06B', D: '#E5A932',
+    b: '#FF7EB0', B: '#FFA8CB', K: '#D9427B',
+  };
+  const vueloIcon = () => gridArt(VUELO_ICON, VUELO_PAL);
 
   const ICONS = {
     comida: () => strawberry(),
     carrito: () => logIcon(),
-    vuelo: () => {
-      const c = NV.mk(16, 16), g = c.getContext('2d');
-      g.imageSmoothingEnabled = false;
-      g.drawImage(character('marian', 'happy'), 0, 0, 16, 16);
-      return c;
-    },
+    vuelo: () => vueloIcon(),
   };
 
   NV.Art = {

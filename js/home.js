@@ -27,12 +27,15 @@
     for (const k in hop) if (hop[k] > 0) hop[k] = Math.max(0, hop[k] - dt);
     NV.Scene.draw(ctx, scene, { scroll: clk * 7, clk });
     const s = spots();
+    const mSc = 1 - (lift('marian') / 36) * 0.3;
+    const rSc = 1 - (lift('rey') / 36) * 0.35;
     ctx.fillStyle = 'rgba(60,40,20,0.16)';
     ctx.beginPath();
-    ctx.ellipse(s.marian.x, scene.groundY + 2, 26, 5, 0, 0, Math.PI * 2);
+    ctx.ellipse(s.marian.x, scene.groundY + 2, 26 * mSc, 5 * mSc, 0, 0, Math.PI * 2);
+    ctx.ellipse(s.rey.x, scene.groundY + 2, 24 * rSc, 5 * rSc, 0, 0, Math.PI * 2);
     ctx.fill();
-    A.drawChar(ctx, 'rey', 'happy', s.rey.x, s.rey.feet);
-    A.drawChar(ctx, 'marian', 'happy', s.marian.x, s.marian.feet);
+    A.drawChar(ctx, 'rey', hop.rey > 0 ? 'open' : 'happy', s.rey.x, s.rey.feet);
+    A.drawChar(ctx, 'marian', hop.marian > 0 ? 'open' : 'happy', s.marian.x, s.marian.feet);
   }
 
   cv.addEventListener('pointerdown', e => {
