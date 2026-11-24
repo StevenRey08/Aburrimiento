@@ -18,7 +18,7 @@
   const FLOG_W = 28 * 2.4, FLOG_H = 9 * 2.4;
   const BIRD_W = 14 * 2.4, BIRD_H = 10 * 2.4;
   /* Pies y caja de choque, medidos desde la parte de arriba del tronco (sin saltar) */
-  const FEET_STAND = 2, FEET_DUCK = 22;
+  const FEET_STAND = 0;
   const BOX_STAND = -48, BOX_DUCK = -26, BOX_BOTTOM = LOG_H - 2;
   /* Salto parecido al del dinosaurio: sube, cae rápido y se queda en el aire lo justo */
   const JV = 820, GRAV = 2000, FAST_FALL = 2.2;
@@ -270,12 +270,13 @@
     }
   }
 
-  /* Tronco con una persona encima. Las ruedas van debajo; el personaje se dibuja sobre el tronco. */
+  /* Tronco con una persona encima. Las ruedas van debajo; el personaje se dibuja sobre el tronco sin hundirse. */
   function drawRig() {
     const top = rigTop(), cx = cxCart();
     const duck = input.duck && st === 'play';
     const face = g.hit > 0 ? 'ugh' : g.py < -4 ? 'open' : 'happy';
     const bob = duck || g.py < -2 ? 0 : Math.sin(clk * 6) * 0.5;
+    const jumpLift = g.py < -2 ? Math.min(8, -g.py * 0.06) : 0;
     const frame = Math.floor(g.dist / 9);
     for (const wx of [cx - 28, cx + 28]) {
       ctx.drawImage(A.wheel(frame), wx - WHEEL / 2, top + LOG_H + 5 - WHEEL / 2, WHEEL, WHEEL);
@@ -285,7 +286,16 @@
     ctx.rotate(g.tilt);
     ctx.translate(-cx, -(top + LOG_H / 2));
     ctx.drawImage(A.cart(), cartX, top, CART_W, LOG_H);
-    A.drawChar(ctx, who || 'marian', face, cx, top + (duck ? FEET_DUCK : FEET_STAND) + bob);
+    const feetY = top + FEET_STAND - jumpLift + bob;
+    if (duck) {
+      ctx.save();
+      ctx.translate(cx, top + 1);
+      ctx.scale(1.12, 0.66);
+      A.drawChar(ctx, who || 'marian', face, 0, 0);
+      ctx.restore();
+    } else {
+      A.drawChar(ctx, who || 'marian', face, cx, feetY);
+    }
     ctx.restore();
   }
 

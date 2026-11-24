@@ -14,6 +14,12 @@
   const K = (x, y) => x + ',' + y;
   const SET = list => new Set(list.map(([x, y]) => K(x, y)));
   const inEll = (x, y, e) => { const dx = (x + 0.5 - e[0]) / e[2], dy = (y + 0.5 - e[1]) / e[3]; return dx * dx + dy * dy <= 1; };
+  const inRotEll = (x, y, cx, cy, rx, ry, ang) => {
+    const dx = x + 0.5 - cx, dy = y + 0.5 - cy;
+    const c = Math.cos(ang), s = Math.sin(ang);
+    const u = dx * c + dy * s, v = -dx * s + dy * c;
+    return (u * u) / (rx * rx) + (v * v) / (ry * ry) <= 1;
+  };
   const inCirc = (x, y, cx, cy, r) => { const dx = x + 0.5 - cx, dy = y + 0.5 - cy; return dx * dx + dy * dy <= r * r; };
 
   /* Pinta una cuadrícula: colorAt(x, y) devuelve un color o null. outline añade un borde de 1 pixel. */
@@ -183,6 +189,55 @@
       const dx = (x + 0.5 - 20) / 11;
       const shadeY = 27.5 + (1 - dx * dx) * 2.5;
       return y >= shadeY ? P.shade : P.body;
+    }, P.line);
+  }
+
+  /* Marian volando: lienzo 56x44 para que las orejas se abran y aleteen como alitas sin cortarse.
+     Frames: 0 = arriba, 1 = abiertas/planeo, 2 = empuje abajo, 3 = recogiendo. */
+  const FLY_EARS = [
+    { rx1: 4.5, ry1: 2.6, x1: 18, y1: 14.5, a1: 0.52, rx2: 5.8, ry2: 3.3, x2: 11, y2: 10.2, a2: 0.38, shadeOff: 0.9 },
+    { rx1: 4.8, ry1: 2.7, x1: 17.5, y1: 16.5, a1: 0.10, rx2: 6.2, ry2: 3.4, x2: 9.5, y2: 16.8, a2: -0.08, shadeOff: 1.0 },
+    { rx1: 4.6, ry1: 2.7, x1: 17.5, y1: 18.5, a1: -0.52, rx2: 5.8, ry2: 3.3, x2: 11.2, y2: 24.0, a2: -0.82, shadeOff: 1.2 },
+    { rx1: 4.6, ry1: 2.6, x1: 17.5, y1: 17.5, a1: -0.20, rx2: 5.8, ry2: 3.3, x2: 10.5, y2: 20.0, a2: -0.35, shadeOff: 1.0 },
+  ];
+  function flyMarian(face, frame) {
+    const P = CHAR.marian, maps = faceMaps(P), F = maps[face];
+    const feat = SET([...F.eye, ...(F.brow || []), ...F.mouth]);
+    const glint = SET(F.glint);
+    const tongue = SET(F.tongue);
+    const W = 56, OX = 8, OY = 2;
+    const ep = FLY_EARS[frame % FLY_EARS.length];
+    const bodyShapes = [
+      [20 + OX, 15 + OY, 9.2, 7.8], [20 + OX, 26 + OY, 10.2, 8.6],
+      [12.5 + OX, 25.5 + OY, 2.8, 2.3], [27.5 + OX, 25.5 + OY, 2.8, 2.3],
+      [14.5 + OX, 34.5 + OY, 3.2, 2.2], [25.5 + OX, 34.5 + OY, 3.2, 2.2],
+    ];
+    const inLeftEar = (x, y) => inRotEll(x, y, ep.x1, ep.y1, ep.rx1, ep.ry1, ep.a1) || inRotEll(x, y, ep.x2, ep.y2, ep.rx2, ep.ry2, ep.a2);
+    const inRightEar = (x, y) => inRotEll(x, y, W - ep.x1, ep.y1, ep.rx1, ep.ry1, -ep.a1) || inRotEll(x, y, W - ep.x2, ep.y2, ep.rx2, ep.ry2, -ep.a2);
+    return paint(W, 44, (x, y) => {
+      const lx = x - OX, ly = y - OY;
+      const bowY = frame === 0 ? y + 1 : frame === 2 ? y - 1 : y;
+      const d = bow(lx, bowY - OY) || crownMarian(lx, ly);
+      if (d) return d;
+      const inBody = bodyShapes.some(e => inEll(x, y, e));
+      const le = inLeftEar(x, y), re = inRightEar(x, y);
+      if (!inBody && !le && !re) return null;
+      if (inBody) {
+        const k = K(lx, ly);
+        if (glint.has(k)) return '#FFFFFF';
+        if (tongue.has(k)) return P.tongue;
+        if (feat.has(k)) return P.eye;
+        if (maps.cheeks.has(k)) return P.cheek;
+        if ((lx === 12 || lx === 27) && ly >= 14 && ly <= 17) return '#9BBCE3';
+        const dx = (lx + 0.5 - 20) / 11;
+        const shadeY = 27.5 + (1 - dx * dx) * 2.5;
+        return ly >= shadeY ? P.shade : P.body;
+      }
+      /* Sombreado suave debajo de cada oreja al batir el aire. */
+      const cx = x + 0.5, cy = y + 0.5;
+      const t = le ? (cx - ep.x2) / Math.max(1, ep.x1 - ep.x2) : (W - cx - ep.x2) / Math.max(1, ep.x1 - ep.x2);
+      const midY = ep.y2 + (ep.y1 - ep.y2) * Math.max(0, Math.min(1, t));
+      return cy >= midY + ep.shadeOff ? P.earShade : P.body;
     }, P.line);
   }
 
@@ -422,16 +477,23 @@
       return spoke ? '#ECC98B' : '#70492A';
     }, '#2A180D');
   }
-  /* Tronco: corteza texturizada, brotes y flores arriba, y anillos en la punta de adelante. */
+  /* Tronco: corteza texturizada, brotes y flores arriba, parte trasera redondeada como la delantera y anillos adelante. */
   function logArt(W, H) {
-    const ry = H / 2 - 1.5, rx = ry * 0.78, ecx = W - rx - 1, ecy = H / 2;
-    const FLOW = SET([[Math.round(W * 0.2), 2], [Math.round(W * 0.5), 3], [Math.round(W * 0.8), 2]]);
-    const LEAF = SET([[Math.round(W * 0.2) - 1, 2], [Math.round(W * 0.5) + 1, 3], [Math.round(W * 0.8) - 1, 2]]);
-    const KNOT = SET([[Math.round(W * 0.35), Math.round(H * 0.62)], [Math.round(W * 0.66), Math.round(H * 0.72)]]);
+    const ry = H / 2 - 1.5, rx = ry * 0.78, ecx = W - rx - 1, ecxL = rx + 1, ecy = H / 2;
+    const FLOW = SET([[Math.round(W * 0.25), 2], [Math.round(W * 0.52), 3], [Math.round(W * 0.78), 2]]);
+    const LEAF = SET([[Math.round(W * 0.25) - 1, 2], [Math.round(W * 0.52) + 1, 3], [Math.round(W * 0.78) - 1, 2]]);
+    const KNOT = SET([[Math.round(W * 0.36), Math.round(H * 0.62)], [Math.round(W * 0.64), Math.round(H * 0.72)]]);
     return paint(W, H, (x, y) => {
       const cx = x + 0.5, cy = y + 0.5;
       const ex = (cx - ecx) / rx, ey = (cy - ecy) / ry, d = Math.sqrt(ex * ex + ey * ey);
       if (d <= 1) return d < 0.28 ? '#B67329' : Math.floor(d * 5) % 2 ? '#F0CE96' : '#DDA964';
+      const exL = (cx - ecxL) / rx, dL = Math.sqrt(exL * exL + ey * ey);
+      if (cx < ecxL) {
+        if (dL > 1) return null;
+        if (cy < 3.5) return '#BA824B';
+        if (dL > 0.72) return '#674023';
+        return dL < 0.35 ? '#7A4D2A' : '#8F5D34';
+      }
       if (cx > ecx || cy < 1 || cy > H - 1) return null;
       const k = K(x, y);
       if (FLOW.has(k)) return '#FF95B8';
@@ -501,10 +563,14 @@
 
   NV.Art = {
     char: (kind, face) => memo('c' + kind + face, () => character(kind, face)),
+    flyChar: (face, frame) => memo('fm' + face + (frame % 4), () => flyMarian(face, frame % 4)),
     /* Dibuja un personaje con los pies en feetY y centrado en cx. k escala el personaje. */
     drawChar(ctx, kind, face, cx, feetY, k = 1) {
       const S = 40 * PX * k;
       ctx.drawImage(NV.Art.char(kind, face), cx - S / 2, feetY - 37.5 * PX * k, S, S);
+    },
+    drawFlyChar(ctx, face, frame, cx, feetY) {
+      ctx.drawImage(NV.Art.flyChar(face, frame), cx - 28 * PX, feetY - 39.5 * PX, 56 * PX, 44 * PX);
     },
     food: name => memo('f' + name, FOODS[name]),
     icon: name => memo('i' + name, ICONS[name]),
