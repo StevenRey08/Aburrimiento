@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#9BD8F5">
+<title>Marian y Rey</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;700&family=Nunito:wght@600;800&family=Press+Start+2P&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<main id="app">
+
+  <section id="home" class="screen">
+    <canvas id="homeCv" class="cv" aria-hidden="true"></canvas>
+    <header class="homeTop">
+      <h1>Marian y Rey</h1>
+      <p>Toca a tus amigos para que salten</p>
+    </header>
+    <nav class="menu">
+      <button class="menuBtn m-feed" data-go="feed"><img data-icon="comida" alt=""><span>Hora de comer</span></button>
+      <button class="menuBtn m-cart" data-go="cart"><img data-icon="carrito" alt=""><span>Paseo en tronco</span></button>
+      <button class="menuBtn m-fly" data-go="fly"><img data-icon="vuelo" alt=""><span>Vuelo de Marian</span></button>
+    </nav>
+  </section>
+
+  <section id="feed" class="screen" hidden>
+    <canvas id="fc" class="cv" aria-hidden="true"></canvas>
+    <div class="topbar">
+      <button class="pillBtn homeBtn" data-home>Inicio</button>
+      <div class="score">Puntos <b id="fScore">0</b></div>
+      <div class="hearts" id="fLives" aria-label="Vidas"></div>
+    </div>
+    <div class="combo" id="fCombo"></div>
+    <p class="gMsg" id="fMsg" role="status"></p>
+    <div class="dpad" aria-label="Controles">
+      <button class="dpadBtn" data-dir="left" aria-label="Izquierda"><svg viewBox="0 0 24 24"><path d="M15 5 L8 12 L15 19 Z"/></svg></button>
+      <button class="dpadBtn" data-dir="up" aria-label="Saltar"><svg viewBox="0 0 24 24"><path d="M5 15 L12 8 L19 15 Z"/></svg><span>Saltar</span></button>
+      <button class="dpadBtn" data-dir="right" aria-label="Derecha"><svg viewBox="0 0 24 24"><path d="M9 5 L16 12 L9 19 Z"/></svg></button>
+    </div>
+
+    <div class="panel" id="fPick">
+      <h2>Hora de comer</h2>
+      <p>Elige quién va a comer. Usa las flechas de la pantalla para moverte y saltar.</p>
+      <div class="pickRow">
+        <button class="pickBtn" data-char="marian" aria-pressed="false"><img data-art="marian" alt=""><span>Marian</span></button>
+        <button class="pickBtn" data-char="rey" aria-pressed="false"><img data-art="rey" alt=""><span>Rey</span></button>
+      </div>
+      <p class="hint">Cuidado con el brócoli, ese no se come.</p>
+      <button class="btn" id="fGo" disabled>Empezar</button>
+      <button class="pillBtn homeBtn" data-home>Volver</button>
+    </div>
+
+    <div class="panel" id="fOver" hidden>
+      <h2 id="fOverTitle"></h2>
+      <p class="big">Puntos: <b id="fFinal">0</b></p>
+      <p class="badge" id="fNew" hidden>Nuevo récord</p>
+      <p id="fOverMsg"></p>
+      <p class="small" id="fSaved"></p>
+      <button class="btn" id="fAgain">Otra vez</button>
+      <div class="row">
+        <button class="pillBtn" id="fChange">Cambiar personaje</button>
+        <button class="pillBtn homeBtn" data-home>Inicio</button>
+      </div>
+    </div>
+  </section>
+
+  <section id="cart" class="screen" hidden>
+    <canvas id="cc" class="cv" aria-hidden="true"></canvas>
+    <div class="topbar">
+      <button class="pillBtn homeBtn" data-home>Inicio</button>
+      <div class="score">Puntos <b id="cScore">0</b></div>
+      <div class="hearts" id="cLives" aria-label="Vidas"></div>
+      <button class="pillBtn" id="cPauseBtn">Pausa</button>
+    </div>
+    <p class="gMsg" id="cMsg" role="status"></p>
+    <div class="ctrls">
+      <button class="ctrl" id="cDuck">Agachar</button>
+      <button class="ctrl" id="cJump">Saltar</button>
+    </div>
+
+    <div class="panel" id="cStart">
+      <h2>Paseo en tronco</h2>
+      <p>Elige quién se sube al tronco.</p>
+      <div class="pickRow">
+        <button class="pickBtn" data-cchar="marian" aria-pressed="false"><img alt=""><span>Marian</span></button>
+        <button class="pickBtn" data-cchar="rey" aria-pressed="false"><img alt=""><span>Rey</span></button>
+      </div>
+      <p class="small">Toca para saltar las piedras y los troncos. Abajo para agacharte de los pájaros.</p>
+      <p class="small">Récord: <b id="cBest">0</b></p>
+      <button class="btn" id="cPlay" disabled>Vamos</button>
+      <button class="pillBtn homeBtn" data-home>Volver</button>
+    </div>
+
+    <div class="panel" id="cPausePanel" hidden>
+      <h2>Pausa</h2>
+      <button class="btn" id="cResume">Seguir</button>
+      <button class="pillBtn homeBtn" data-home>Inicio</button>
+    </div>
+
+    <div class="panel" id="cOver" hidden>
+      <h2 id="cOverTitle"></h2>
+      <p class="big">Puntos: <b id="cFinal">0</b></p>
+      <p class="badge" id="cNew" hidden>Nuevo récord</p>
+      <p id="cOverMsg"></p>
+      <p class="small" id="cSaved"></p>
+      <button class="btn" id="cAgain">Otra vuelta</button>
+      <button class="pillBtn homeBtn" data-home>Inicio</button>
+    </div>
+  </section>
+
+  <section id="fly" class="screen" hidden>
+    <canvas id="fl" class="cv" aria-hidden="true"></canvas>
+    <div class="topbar">
+      <button class="pillBtn homeBtn" data-home>Inicio</button>
+      <div class="score">Puntos <b id="lScore">0</b></div>
+      <div class="hearts" id="lLives" aria-label="Vidas"></div>
+      <button class="pillBtn" id="lPauseBtn">Pausa</button>
+    </div>
+    <p class="gMsg" id="lMsg" role="status"></p>
+    <div class="ctrls right">
+      <button class="ctrl" id="lDash">Ráfaga</button>
+    </div>
+
+    <div class="panel" id="lStart">
+      <h2>Vuelo de Marian</h2>
+      <p>Mantén el dedo para subir y suéltalo para bajar. Toca otra vez en el aire para aletear. Ráfaga te impulsa hacia adelante, y los corazones te dan una vida más.</p>
+      <p class="small">Récord: <b id="lBest">0</b></p>
+      <button class="btn" id="lPlay">Despegar</button>
+      <button class="pillBtn homeBtn" data-home>Volver</button>
+    </div>
+
+    <div class="panel" id="lPausePanel" hidden>
+      <h2>Pausa</h2>
+      <button class="btn" id="lResume">Seguir</button>
+      <button class="pillBtn homeBtn" data-home>Inicio</button>
+    </div>
+
+    <div class="panel" id="lOver" hidden>
+      <h2 id="lOverTitle"></h2>
+      <p class="big">Puntos: <b id="lFinal">0</b></p>
+      <p class="badge" id="lNew" hidden>Nuevo récord</p>
+      <p id="lOverMsg"></p>
+      <p class="small" id="lSaved"></p>
+      <button class="btn" id="lAgain">Otra vuelta</button>
+      <button class="pillBtn homeBtn" data-home>Inicio</button>
+    </div>
+  </section>
+
+</main>
+
+<script src="js/core.js"></script>
+<script src="js/art.js"></script>
+<script src="js/scene.js"></script>
+<script src="js/home.js"></script>
+<script src="js/feed.js"></script>
+<script src="js/cart.js"></script>
+<script src="js/fly.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
