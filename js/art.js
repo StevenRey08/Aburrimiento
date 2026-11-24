@@ -130,21 +130,37 @@
   }
 
   /* ---------- comida ---------- */
-  const SEEDS = SET([[5, 9], [9, 9], [7, 11], [10, 12], [6, 13], [8, 7]]);
-  function strawberry() {
-    return paint(16, 16, (x, y) => {
-      const cx = x + 0.5, cy = y + 0.5;
-      if (y === 2 && Math.abs(cx - 8) <= 1.5) return '#3E8048';
-      if (y === 3 && Math.abs(cx - 8) <= 4.2) return '#5DBB63';
-      if (y === 4 && Math.abs(cx - 8) <= 3.4) return '#4FA65A';
-      if (y < 5 || y > 14) return null;
-      const w = 5.8 * (1 - Math.max(0, (cy - 6) / 9));
-      if (Math.abs(cx - 8) > w) return null;
-      if (SEEDS.has(K(x, y))) return '#FFE9EE';
-      if (y === 7 && (x === 5 || x === 6)) return '#FF9AA8';
-      return '#E84D5F';
-    }, '#7A2236');
-  }
+  const STRAWBERRY = [
+    '.......ggg......',
+    '......gHLg......',
+    '..gggggLLggggg..',
+    '.gHHLLGLLGLLGGg.',
+    '.gGpprrLGrrrrGg.',
+    '.opwrrrGrrrrrdo.',
+    '.opwrrrrrrsrrdo.',
+    '.oprrrsrrrrrrdo.',
+    '..orsrrrrrrsdo..',
+    '..orrrrrsrrrdo..',
+    '...orsrrrrsdo...',
+    '...orrrrrdddo...',
+    '....orrsdddo....',
+    '.....orrddo.....',
+    '......ordo......',
+    '.......oo.......',
+  ];
+  const STRAWBERRY_PAL = {
+    g: '#24522D',
+    G: '#378C43',
+    L: '#5BC75E',
+    H: '#93EA7A',
+    o: '#701629',
+    r: '#EC3B54',
+    d: '#C42039',
+    p: '#FF8095',
+    w: '#FFD4DC',
+    s: '#FFE37E',
+  };
+  const strawberry = () => gridArt(STRAWBERRY, STRAWBERRY_PAL);
   function cookie() {
     const CHIPS = SET([[5, 5], [10, 4], [11, 9], [6, 11], [9, 12], [4, 9]]);
     return paint(16, 16, (x, y) => {
