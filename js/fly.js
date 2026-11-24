@@ -44,7 +44,7 @@
   function reset() {
     g = {
       t: 0, speed: 170, dist: 0, stars: 0, lives: 3, inv: 0, hurt: 0, shield: 0,
-      dashT: 0, dashCd: 0, flapCd: 0, flapPh: 0, flapSeq: 0,
+      dashT: 0, dashCd: 0, flapCd: 0, flapPh: 0, flapSp: 8,
       x: fit ? fit.W * 0.24 : 90, y: fit ? fit.H * 0.42 : 300, dy: 0, vy: 0, rot: 0,
       obs: [], items: [], parts: [],
       nextObs: 2.2, nextItem: 1.2, nextHeart: 14,
@@ -135,9 +135,10 @@
     hold = true;
     if (g.flapCd <= 0 && g.vy > 40) {
       g.vy = -360; g.flapCd = FLAP_CD;
-      g.flapPh = 2;
-      burst(g.x - 18, g.dy + 12, '#FFFFFF', 4);
-      burst(g.x + 18, g.dy + 12, '#FFFFFF', 4);
+      g.flapPh = 6;
+      g.flapSp = 18;
+      burst(g.x - 16, g.dy + 10, '#FFFFFF', 4);
+      burst(g.x + 16, g.dy + 10, '#FFFFFF', 4);
       NV.Sound.squeak();
     } else if (g.vy > -110) {
       g.vy = -110;
@@ -189,8 +190,9 @@
     g.dist += sp;
     g.inv -= dt; g.hurt -= dt; g.shield -= dt; g.bump -= dt;
     g.dashT -= dt; g.dashCd -= dt; g.flapCd -= dt;
-    const flapRate = hold || g.dashT > 0 || g.vy < -60 ? 13 : 4.2;
-    g.flapPh = (g.flapPh + dt * flapRate) % 4;
+    const targetSp = hold || g.dashT > 0 || g.vy < -50 ? 15 : 7;
+    g.flapSp += (targetSp - g.flapSp) * (1 - Math.exp(-6 * dt));
+    g.flapPh = (g.flapPh + dt * g.flapSp) % 8;
 
     /* Ráfaga: Marian sale disparada hacia adelante y deja un rastro de colores. */
     const dashing = g.dashT > 0;
@@ -335,8 +337,8 @@
     if (!blink) {
       ctx.rotate(g.rot);
       const earFrame = st === 'play'
-        ? (hold || g.vy < -20 || g.dashT > 0 ? Math.floor(g.flapPh) % 4 : (Math.floor(g.flapPh) % 2 === 0 ? 1 : 0))
-        : (Math.floor(clk * 5) % 2 === 0 ? 1 : 0);
+        ? Math.floor(g.flapPh) % 8
+        : Math.floor(clk * 7) % 8;
       A.drawFlyChar(ctx, face, earFrame, 0, 27);
     }
     ctx.restore();
